@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#nos3 matrix
+nos3
+
+#Images
+*.png
