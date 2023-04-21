@@ -17,7 +17,7 @@ def lanczos_decomposition(A: RealArray, x: RealArray, k: int):
 
     u_1 = x / np.linalg.norm(x)
     U = [u_1]
-    for j in range(k + 1):
+    for j in range(k):
         u_j = U[-1]
         w = A @ u_j
         alpha.append(np.inner(u_j, w))
