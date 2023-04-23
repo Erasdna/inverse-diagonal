@@ -5,11 +5,18 @@ import numpy as np
 from src.ichol import ichol1, ichol, incomplete_cholesky
 from src.lanczos import lanczos_decomposition
 from scipy.sparse.linalg import spsolve
+from scipy.io import mmread
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use("agg")
 
 A = loadmat("nos3/nos3.mat")["Problem"][0][0][1] # lol æsj
+
+#Bruk matrix market formatet: 
+#Får en error da...
+#A = mmread("nos3/nos3.mtx") #:solbrillemoji:
+#A=A.tocsc()
+
 G = incomplete_cholesky(A)
 preconditioned = spsolve(G, spsolve(G, A).transpose()).transpose()
 x = np.random.randn(A.shape[0])
