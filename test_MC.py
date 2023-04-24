@@ -1,19 +1,24 @@
 from src.MC import MC
-from scipy.io import mmread
+from scipy.io import mmread, loadmat
 from src.ichol import incomplete_cholesky
-from scipy.sparse.linalg import inv
+from scipy.sparse.linalg import inv, splu
+from scipy.sparse import csr_matrix
 import numpy as np
 import matplotlib.pyplot as plt
 
 
 if __name__=="__main__":
-    A = mmread("nos3/nos3.mtx")
+    A = loadmat("nos3/nos3.mat")["Problem"][0][0][1]
     L=incomplete_cholesky(A.tocsc())
     print("Finished calculating L")
-    precon_inv=inv(L.T) @ inv(L)
+    #precon_inv=inv(L.T) @ inv(L)
+    M = csr_matrix(L @ L.T)
+    print(L.nnz / (960 ** 2))
+    print(inv(M).nnz / (960 ** 2))
     tol=1e-9
     N=900
-    res=MC(A=A,precon_inv=precon_inv,tol=tol,N=N,mat=np.eye(N=A.shape[0]))
+    res=MC(A=A,L=L.todense(), tol=tol,N=N,mat=None)
+    
     diagA=inv(A).diagonal()
     diff=np.linalg.norm(res-diagA[:],axis=1)
     
