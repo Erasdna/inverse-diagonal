@@ -1,9 +1,9 @@
 import numpy as np
 import scipy
 from scipy.sparse import csr_matrix
-from scipy.sparse.linalg import spsolve, splu, use_solver#, spsolve_triangular
+from scipy.sparse.linalg import spsolve, splu, use_solver, spsolve_triangular
 from scipy.linalg import solve_triangular, solve_banded, cho_solve_banded, lu_solve, solve, cho_solve
-import numba
+
 
 #@numba.njit
 #def tri_solve(Lvals, iL, jL,b):
@@ -22,8 +22,8 @@ import numba
 
 def chol_solve(L, LT, b):
     use_solver(useUmfpack=False)
-    y = tri_solve(L, b)
-    return Wtri_solve(L, b)#tri_solve(LT, y)
+    y = spsolve(L, b, permc_spec="NATURAL")
+    return spsolve(LT, y, permc_spec="NATURAL")
 
 
 def cg(A, target, L, LT, tol):
