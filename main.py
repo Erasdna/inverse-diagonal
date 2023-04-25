@@ -3,7 +3,7 @@ import scipy.sparse as sparse
 from scipy.io import loadmat
 import numpy as np
 from src.MC import MC
-from src.ichol import ichol1, ichol, incomplete_cholesky
+from src.ichol import incomplete_cholesky
 from src.lanczos import lanczos_decomposition
 from scipy.sparse.linalg import spsolve, inv
 from scipy.io import mmread
