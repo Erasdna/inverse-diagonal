@@ -53,7 +53,6 @@ def lanczos_decomposition_2(A: RealArray, x: RealArray, k: int):
             u -= U[:,j-1] * beta_list[-1]
         
         #Reorthogonalization
-        print(j)
         alphas=U.T @ u
         u-=U @ alphas 
         alpha+=alphas[-1]
