@@ -1,9 +1,11 @@
+from typing import Callable
 from src.cg import cg, chol_solve
 import numpy as np
 from src.typealias import RealArray
 from multiprocessing import cpu_count
 from pqdm.processes import pqdm
 from scipy.sparse import csr_matrix
+from scipy.stats import norm
 
 def MC_step(z : RealArray, A : RealArray, L : RealArray, LT, tol : float, mat=None) -> RealArray:
     """MC step: calculates (A^-1 @ z) * z 
@@ -45,3 +47,27 @@ def MC(A: RealArray, L: RealArray ,tol : float,N : int, mat: RealArray = None) -
     div=1/np.arange(1,N+1)
     return np.cumsum(ret,axis=1)*div[:,None]
     
+
+
+
+
+
+def MC_lanzos_control_variates(Z: Callable[[RealArray], RealArray], Y: Callable[[RealArray], RealArray], mu_y: RealArray, N:int, n: int, clip=False):
+    def mc_cv_step(Z: Callable[[RealArray], RealArray], Y: Callable[[RealArray], RealArray]):
+        z = np.random.choice([-1,1],size=n, replace=True)
+        return Z(z), Y(z)
+    #ins = ((Z, Y) for _ in range(N))
+    #ret=np.array(pqdm(ins, mc_cv_step, n_jobs=cpu_count(),argument_type='args'))
+    ret = np.array([mc_cv_step(Z, Y) for _ in range(N)])
+    #ret = np.array([MC_step(el, A, L,LT, tol) for el in z_mat.T])
+    est_mu_z = np.mean(ret[:, 0], axis=0)
+    est_mu_y = np.mean(ret[:, 1], axis=0)
+    est_sigma_y = np.mean((ret[:, 1] - mu_y) ** 2, axis=0) # TODO: We tecnically know this one already, but probably hard to compute
+    est_sigma_zy = np.mean((ret[:, 0] - est_mu_z) * (ret[:, 1] - mu_y), axis=0)
+    alpha = est_sigma_zy / est_sigma_y
+    if clip:
+        sigma_alpha = np.mean((((ret[:, 1] - mu_y) / (ret[:, 0] - est_mu_z)) - alpha) ** 2, axis=0)
+        c_alpha = norm.ppf(1 - (0.01 / 2))
+        alpha = np.where(np.abs(alpha - 1) < c_alpha * np.sqrt(sigma_alpha / N), 1, alpha)
+        print(f"alpha: {alpha}")
+    return est_mu_z - alpha * (est_mu_y - mu_y), est_mu_z - (est_mu_y - mu_y)

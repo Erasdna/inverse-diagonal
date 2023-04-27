@@ -1,8 +1,9 @@
+from src.cg import cg
 import scipy
 import scipy.sparse as sparse
 from scipy.io import loadmat
 import numpy as np
-from src.MC import MC
+from src.MC import MC, MC_lanzos_control_variates
 from src.ichol import incomplete_cholesky
 from src.lanczos import lanczos_decomposition, lanczos_decomposition_2
 from scipy.sparse.linalg import spsolve, inv
@@ -23,12 +24,12 @@ preconditioned = spsolve(G, spsolve(G, A).transpose()).transpose()
 x = np.random.randn(A.shape[0])
 error_l = []
 error_comb = []
-error_mc = []
+error_comb_fix = []
 A_inv = np.linalg.inv(A.todense())
-K = 500
-U, alpha, beta = lanczos_decomposition_2(preconditioned, x, K)
+K = range(16, 100)
+U, alpha, beta = lanczos_decomposition_2(preconditioned, x, 100)
 
-for k in range(100, K):
+for k in K:
 
     V = np.array(U[:,:k])
     T = sparse.diags((alpha[:k], beta[:k-1], beta[:k-1]), (0, 1, -1))
@@ -41,18 +42,32 @@ for k in range(100, K):
 
 
     est_diag_l = np.sum(W**2, axis=1)
-    est_diag_comb = est_diag_l + MC(A, G, 1e-9, 100, W @ W.T)[-1]
-    est_diag_mc = MC(A, G, 1e-9, 100)[-1]
+    #est_diag_mc = MC(A, G, 1e-9, 100)[-1]
     
+    GT = sparse.csr_matrix(G.T)
+    Z = lambda z: cg(A, z, G, GT, 1e-9) * z
+    #WWT = W @ W.T
+    #sigma_y = np.sum(WWT ** 2, axis=1) - np.diag(WWT ** 2)
+    Y = lambda z: (W @ (W.T @ z)) * z
+    est_diag_comb, est_diag_comb_fix= MC_lanzos_control_variates(Z, Y, est_diag_l, 400, A.shape[0], clip=True)
+    #est_diag_comb_fix = MC_lanzos_control_variates(Z, Y, est_diag_l, sigma_y, 100,  A.shape[0], True)
+
+
     error_l.append(np.sqrt(np.sum((np.diag(A_inv) - est_diag_l)**2) / np.sum(np.diag(A_inv) ** 2)) )
     error_comb.append(np.sqrt(np.sum((np.diag(A_inv) - est_diag_comb)**2) / np.sum(np.diag(A_inv) ** 2)) )
-    error_mc.append(np.sqrt(np.sum((np.diag(A_inv) - est_diag_mc)**2) / np.sum(np.diag(A_inv) ** 2)) )
+    error_comb_fix.append(np.sqrt(np.sum((np.diag(A_inv) - est_diag_comb_fix)**2) / np.sum(np.diag(A_inv) ** 2)))
+    #error_mc.append(np.sqrt(np.sum((np.diag(A_inv) - est_diag_mc)**2) / np.sum(np.diag(A_inv) ** 2)) )
 
-    print(f"MSE at k={k} is {error_l[-1]}")
-    print(error_comb[-1])
-    print(error_mc[-1])
+    print(f"MSE at k={k} is {error_l[-1]}")  
+    print(f"error ours {error_comb[-1]}")
+    print(f"error theirs: {error_comb_fix[-1]}")
+    #print(error_mc[-1])
 
-plt.semilogy(range(70, K), error_l, range(70, k), error_comb)
+plt.semilogy(K, error_l, label="lanczos")
+plt.semilogy(K, error_comb, label="lanczos+mc optimal alpha")
+plt.semilogy(K, error_comb_fix, label="lanczos+mc")
+plt.grid(True)
+plt.legend()
 plt.savefig("error.pdf")
 
 
