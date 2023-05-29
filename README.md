@@ -16,7 +16,7 @@ The .json files used to generate the data will be provided.
 Example: python figs.py MC_big Run
 Will run the MC_big experiment. 
 
-Experiments:
+### Experiments:
     - MC_big : Runs the MC estimator for 10000 steps
     - MC_many : Runs the MC estimator for 960 steps, 100 times
     - Lanczos_k : Runs the Lanczos estimator for 5 to 500 iterations
