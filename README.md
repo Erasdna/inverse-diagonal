@@ -1,13 +1,13 @@
-## CLA miniproject: Estimating the diagonal of the inverse
+# CLA miniproject: Estimating the diagonal of the inverse
 
-# In src:
+## In src:
     - cg.py: Implements the preconditioned CG method
     - ichol.py : Implements the incomplete Cholesky method
     - lanczos_MC.py : Implements the combined MC - Lanczos method for estimating the diagonal of the inverse
     - lanczos.py : Implements the lanczos method for estimating the diagonal of the inverse
     - Mc.py : Implements the MC method for estimating the diagonal of the inverse
 
-# To reproduce the figures in the report:
+## To reproduce the figures in the report:
 
 The figures are generated using figs.py. The script can be ran using the "Run" option, meaning that the chosen experiments will be run, or "Load", which loads the data from .json files in the folder Data. Figures are saved to the folder Figs.
 
