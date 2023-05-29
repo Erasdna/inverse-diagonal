@@ -7,14 +7,24 @@ from pqdm.processes import pqdm
 from scipy.sparse import csr_matrix
 from scipy.stats import norm
 
-def MC_step(z : RealArray, A : RealArray, L : RealArray, LT: RealArray, tol : float, W=None, WT=None) -> RealArray:
+def MC_step(z : RealArray, 
+            A : RealArray, 
+            L : RealArray, 
+            LT: RealArray, 
+            tol : float, 
+            W=None, 
+            WT=None) -> RealArray:
     """MC step: calculates (A^-1 @ z) * z 
 
     Args:
         z (RealArray): Sample Rademacher vector
         A (RealArray): Hermitian matrix
-        precon_inv (RealArray): Inverse of precondtitioner for the cg method
+        L (RealArray): Left Cholesky decomposition
+        LT (RealArray): Transpose of L
         tol (float): tolerance of the cg method
+        W (RealArray): Lanczos metho matrix W
+        WT (RealArray): Transpose of W
+
 
     Returns:
         (RealArray): Result of the Monte Carlo step 
@@ -25,13 +35,17 @@ def MC_step(z : RealArray, A : RealArray, L : RealArray, LT: RealArray, tol : fl
     else:
         return y * z
 
-def MC(A: RealArray, L: RealArray, LT:RealArray, tol : float, N : int) -> RealArray:
+def MC(A: RealArray, 
+       L: RealArray, 
+       LT:RealArray, 
+       tol : float, 
+       N : int) -> RealArray:
     """Monte Carlo estimate of the diagonal of (A^-1 - mat)
 
     Args:
         A (RealArray): Hermitian matrix A to be invertes
-        precon_inv (RealArray): Inverse of preconditioner for cg 
-        tol (float): Tolerance of the cg method
+        L (RealArray): Left Cholesky decomposition
+        LT (RealArray): Transpose of L        tol (float): Tolerance of the cg method
         N (int): Number of Monte Carlo steps
 
     Returns:
@@ -43,7 +57,15 @@ def MC(A: RealArray, L: RealArray, LT:RealArray, tol : float, N : int) -> RealAr
     return np.cumsum(ret,axis=1)*div[:,None]
     
 
-def MC_lanzos_control_variates(A: RealArray, L:RealArray, LT: RealArray, W_diag: RealArray, W: RealArray, WT: RealArray,  N:int, tol: float, clip=False):
+def MC_lanzos_control_variates(A: RealArray, 
+                               L:RealArray, 
+                               LT: RealArray, 
+                               W_diag: RealArray, 
+                               W: RealArray, 
+                               WT: RealArray,  
+                               N:int, 
+                               tol: float, 
+                               clip=False):
     """Parallel implementation of the combined Mc Lanczos method. Calculates an estimate of the diagonal of the inverse of the 
     matrix A for k Lanczos iterations and N MC iterations. Returns estimate with optimal variance control parameter
     and with fixed variance control parameter.
@@ -53,7 +75,8 @@ def MC_lanzos_control_variates(A: RealArray, L:RealArray, LT: RealArray, W_diag:
         L (RealArray): Lower triangular part of preconditioner
         LT (RealArray): Upper triangular part of preconditioner
         W_diag (RealArray): Estimated diagonal from the Lanczos only method
-        WWT (RealArray): Variance reducing matrix used for MC
+        W (RealArray): Variance reducing matrix used for MC
+        WT (RealArray): Transpose of W
         N (int): Number of MC steps
         tol (float): Tolerance of CG method
         clip (bool, optional): Clip. Defaults to False.
@@ -89,22 +112,3 @@ def MC_lanzos_control_variates(A: RealArray, L:RealArray, LT: RealArray, W_diag:
         optimal[i-1,:]=est_mu_z - alpha * (est_mu_y - W_diag)
         mean_alpha[i-1]=np.mean(np.abs(alpha))
     return optimal, fixed, mean_alpha
-
-
-
-def MC_lanzos_control_variates_single_proc(Z: Callable[[RealArray], RealArray], Y: Callable[[RealArray], RealArray], mu_y: RealArray, N:int, n: int, clip=False):
-    def mc_cv_step(Z: Callable[[RealArray], RealArray], Y: Callable[[RealArray], RealArray]):
-        z = np.random.choice([-1,1],size=n, replace=True)
-        return Z(z), Y(z)
-    ret = np.array([mc_cv_step(Z, Y) for _ in range(N)])
-    est_mu_z = np.mean(ret[:, 0], axis=0)
-    est_mu_y = np.mean(ret[:, 1], axis=0)
-    est_sigma_y = np.mean((ret[:, 1] - mu_y) ** 2, axis=0) # TODO: We tecnically know this one already, but probably hard to compute
-    est_sigma_zy = np.mean((ret[:, 0] - est_mu_z) * (ret[:, 1] - mu_y), axis=0)
-    alpha = est_sigma_zy / est_sigma_y
-    if clip:
-        sigma_alpha = np.mean((((ret[:, 1] - mu_y) / (ret[:, 0] - est_mu_z)) - alpha) ** 2, axis=0)
-        c_alpha = norm.ppf(1 - (0.01 / 2))
-        alpha = np.where(np.abs(alpha - 1) < c_alpha * np.sqrt(sigma_alpha / N), 1, alpha)
-        #print(f"alpha: {alpha}")
-    return est_mu_z - alpha * (est_mu_y - mu_y), est_mu_z - (est_mu_y - mu_y)
