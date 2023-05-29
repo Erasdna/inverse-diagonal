@@ -3,8 +3,6 @@ import scipy.sparse as sparse
 from scipy.io import mmread
 
 
-        
-
 def incomplete_cholesky(A):
     n = A.shape[0]
     L = sparse.lil_matrix(A.shape)
@@ -15,10 +13,10 @@ def incomplete_cholesky(A):
     return L
 
 
-if __name__ == "__main__":
-    m = mmread("nos3/nos3.mtx")
-    L=ichol(m)
-    ind=L.nonzero()
-    for i in range(len(ind[0])):
-        if ind[0][i]<ind[1][i]:
-            print("Oooops")
+# if __name__ == "__main__":
+#     m = mmread("nos3/nos3.mtx")
+#     L=ichol(m)
+#     ind=L.nonzero()
+#     for i in range(len(ind[0])):
+#         if ind[0][i]<ind[1][i]:
+#             print("Oooops")
