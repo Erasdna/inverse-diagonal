@@ -19,17 +19,17 @@ matplotlib.use("agg")
 
 
 if __name__=="__main__":
-    plt.rcParams.update({
-    'font.size': 16,
-    'text.usetex': True,
-    'text.latex.preamble': r'\usepackage{amsfonts} \usepackage{amsmath}'
-    })
+    #plt.rcParams.update({
+    #'font.size': 16,
+    #'text.usetex': True,
+    #'text.latex.preamble': r'\usepackage{amsfonts} \usepackage{amsmath}'
+    #})
     plt.rc('axes', prop_cycle=(cycler('color', ['tab:blue', 'tab:red', 'tab:green', 'k', 'tab:purple']) +
                             cycler('linestyle', ['-', '-.', '--', ':','-'])))
     
     #Reference matrix
-    A = mmread("nos3/nos3.mtx") # https://sparse.tamu.edu/HB/nos3 download as matrix market format
-    #A = loadmat("nos3/nos3.mat")["Problem"][0][0][1] # lol æsj
+    #A = mmread("nos3/nos3.mtx") # https://sparse.tamu.edu/HB/nos3 download as matrix market format
+    A = loadmat("nos3/nos3.mat")["Problem"][0][0][1] # lol æsj
     A=A.tocsc()
     A_inv = np.linalg.inv(A.todense())
     diagA=np.diag(A_inv)
