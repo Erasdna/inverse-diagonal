@@ -13,6 +13,8 @@ The figures are generated using figs.py. The script can be ran using the "Run" o
 
 The .json files used to generate the figures will be provided.
 
+The nos3 matrix should be dowloaded in a folder named nos3 in .mtx format 
+
 Example: python figs.py MC_big Run
 Will run the MC_big experiment. 
 
