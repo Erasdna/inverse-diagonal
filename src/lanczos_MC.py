@@ -32,6 +32,6 @@ def lanczos_MC(A : RealArray,
         
     GT = sparse.csr_matrix(G.T)
     
-    est_diag_comb, est_diag_comb_fix, optimal_alpha= MC_lanzos_control_variates(A, G,GT , est_diag_l, W @ W.T, N,1e-9, clip=False)
+    est_diag_comb, est_diag_comb_fix, optimal_alpha= MC_lanzos_control_variates(A, G,GT , est_diag_l, W, W.T, N,1e-9, clip=False)
  
     return est_diag_comb,est_diag_comb_fix, optimal_alpha

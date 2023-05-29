@@ -3,7 +3,11 @@ from src.typealias import RealArray
 import scipy.sparse as sparse
 from scipy.sparse.linalg import spsolve
 
-def lanczos_estimate(G: RealArray,U : RealArray ,alpha : RealArray ,beta : RealArray ,k : int):
+def lanczos_estimate(G: RealArray,
+                     U : RealArray,
+                     alpha : RealArray,
+                     beta : RealArray, 
+                     k : int):
     """Calculates the estimate of the diagonal of a matrix A using the the matrix U from the Lanczos decomposition
 
     Args:

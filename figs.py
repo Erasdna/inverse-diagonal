@@ -23,8 +23,8 @@ if __name__=="__main__":
                             cycler('linestyle', ['-', '-.', '--', ':','-'])))
     
     #Reference matrix
-    #A = mmread("nos3/nos3.mtx") # https://sparse.tamu.edu/HB/nos3 download as matrix market format
-    A = loadmat("nos3/nos3.mat")["Problem"][0][0][1] # lol æsj
+    A = mmread("nos3/nos3.mtx") # https://sparse.tamu.edu/HB/nos3 download as matrix market format
+    #A = loadmat("nos3/nos3.mat")["Problem"][0][0][1] # lol æsj
     A=A.tocsc()
     A_inv = np.linalg.inv(A.todense())
     diagA=np.diag(A_inv)
@@ -129,7 +129,7 @@ if __name__=="__main__":
             preconditioned = spsolve(G, spsolve(G, A).transpose()).transpose()
             U, alpha, beta = lanczos_decomposition(preconditioned, x, k)
             for i in tqdm(range(start,k)):
-                est,_=lanczos_estimate(A,G,U,alpha,beta,i)
+                est,_=lanczos_estimate(G,U,alpha,beta,i)
                 relative_error[i]=np.linalg.norm(est-diagA)/np.linalg.norm(diagA)
         fig,ax=plt.subplots()
         ax.semilogy(np.arange(start,k),relative_error[start:],lw=2,label="Lanczos")
