@@ -27,7 +27,7 @@ def chol_solve(L, LT, b):
 
 
 def cg(A, target, L, LT, tol):
-    initial_guess=np.random.rand(target.shape[0]) #Idk?
+    initial_guess=np.random.rand(target.shape[0])
     r_old=target - A @ initial_guess
     p=chol_solve(L, LT, r_old)
     x=initial_guess

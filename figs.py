@@ -13,18 +13,18 @@ from cycler import cycler
 import os
 import json
 from tqdm import tqdm
+import matplotlib
+from scipy.io import loadmat
+matplotlib.use("agg")
+
 
 if __name__=="__main__":
-    plt.rcParams.update({
-    'font.size': 16,
-    'text.usetex': True,
-    'text.latex.preamble': r'\usepackage{amsfonts} \usepackage{amsmath}'
-    })
     plt.rc('axes', prop_cycle=(cycler('color', ['tab:blue', 'tab:red', 'tab:green', 'k', 'tab:purple']) +
                             cycler('linestyle', ['-', '-.', '--', ':','-'])))
     
     #Reference matrix
-    A = mmread("nos3/nos3.mtx") # https://sparse.tamu.edu/HB/nos3 download as matrix market format
+    #A = mmread("nos3/nos3.mtx") # https://sparse.tamu.edu/HB/nos3 download as matrix market format
+    A = loadmat("nos3/nos3.mat")["Problem"][0][0][1] # lol æsj
     A=A.tocsc()
     A_inv = np.linalg.inv(A.todense())
     diagA=np.diag(A_inv)
@@ -58,7 +58,7 @@ if __name__=="__main__":
         fig,ax=plt.subplots()
         ax.loglog(np.arange(40,N),relative_error[40:],lw=2,label="MC")
         ax.set_xlabel("Monte Carlo steps: $N$")
-        ax.set_ylabel("$||d_{MC}^N - diag(A^{-1})||/||diag(A^{-1})||$")
+        ax.set_ylabel("$||d_{MC} - diag(A^{-1})||/||diag(A^{-1})||$")
         ax.grid()
         ax.legend()
         plt.savefig(figpath + ".eps")
@@ -229,12 +229,14 @@ if __name__=="__main__":
                 optimal,fixed,aa=lanczos_MC(A,G,U,alpha,beta,kk,N)
                 diff_optimal=optimal[-1,:] - diagA.T
                 optimal_relative_error[it]=np.linalg.norm(diff_optimal)/np.linalg.norm(diagA)
+                print(optimal_relative_error[it])
                 diff_fixed=fixed[-1,:] - diagA.T
-                fixed_relative_error[it]=np.linalg.norm(diff_fixed[-1])/np.linalg.norm(diagA)
+                fixed_relative_error[it]=np.linalg.norm(diff_fixed)/np.linalg.norm(diagA)
+                print(fixed_relative_error[it])
                 alphas[it]=aa[-1]
         fig,ax=plt.subplots()
-        ax.semilogy(test_ks,optimal_relative_error, lw=2,label="Optimal alpha (N=200)")
-        ax.semilogy(test_ks,fixed_relative_error, lw=2,label="Fixed alpha=1 (N=200)")
+        ax.semilogy(test_ks[:50],optimal_relative_error[:50], lw=2,label="Optimal alpha (N=200)")
+        ax.semilogy(test_ks[:50],fixed_relative_error[:50], lw=2,label="Fixed alpha=1 (N=200)")
         ax.set_xlabel("Lanczos iterations: $k$")
         ax.set_ylabel("$||d^{N,k} - diag(A^{-1})||/||diag(A^{-1})||$")
         ax.grid()
@@ -242,11 +244,12 @@ if __name__=="__main__":
         plt.savefig(figpath + ".eps")
         plt.savefig(figpath + ".png")
         if mode=="Run":
+            print(test_ks)
             stats={
                 "Fixed relative error" : fixed_relative_error.tolist(),
                 "Optimal relative error" : optimal_relative_error.tolist(),
                 "Alphas" : alphas.tolist(),
-                "ks" : test_ks,
+                "ks" : test_ks.tolist(),
                 "MC steps" : N,
             }
             with open(datapath,'w') as file:
