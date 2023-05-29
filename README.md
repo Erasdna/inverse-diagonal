@@ -11,7 +11,7 @@
 
 The figures are generated using figs.py. The script can be ran using the "Run" option, meaning that the chosen experiments will be run, or "Load", which loads the data from .json files in the folder Data. Figures are saved to the folder Figs.
 
-The .json files used to generate the data will be provided.
+The .json files used to generate the figures will be provided.
 
 Example: python figs.py MC_big Run
 Will run the MC_big experiment. 
