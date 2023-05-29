@@ -24,7 +24,7 @@ def lanczos_estimate(G: RealArray,
     V = np.array(U[:,:k])
     T = sparse.diags((alpha[:k], beta[:k-1], beta[:k-1]), (0, 1, -1))
     L = np.linalg.cholesky(T.todense())
-    W = spsolve(L, spsolve(G.T, V).transpose()).transpose()
+    W = spsolve(sparse.csc_matrix(L), spsolve(G.T, V).transpose()).transpose()
     est_diag_l = np.sum(W**2, axis=1)
     return est_diag_l, W
     

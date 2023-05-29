@@ -54,7 +54,7 @@ def MC(A: RealArray,
     ins = ((np.random.choice([-1,1],size=A.shape[0]), A, L, LT, tol) for _ in range(N))
     ret=np.array(pqdm(ins, MC_step, n_jobs=cpu_count(),argument_type='args'))
     div=1/np.arange(1,N+1)
-    return np.cumsum(ret,axis=1)*div[:,None]
+    return np.cumsum(ret,axis=0)*div[:,None]
     
 
 def MC_lanzos_control_variates(A: RealArray, 

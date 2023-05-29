@@ -19,6 +19,11 @@ matplotlib.use("agg")
 
 
 if __name__=="__main__":
+    plt.rcParams.update({
+    'font.size': 16,
+    'text.usetex': True,
+    'text.latex.preamble': r'\usepackage{amsfonts} \usepackage{amsmath}'
+    })
     plt.rc('axes', prop_cycle=(cycler('color', ['tab:blue', 'tab:red', 'tab:green', 'k', 'tab:purple']) +
                             cycler('linestyle', ['-', '-.', '--', ':','-'])))
     
@@ -59,6 +64,7 @@ if __name__=="__main__":
         ax.loglog(np.arange(40,N),relative_error[40:],lw=2,label="MC")
         ax.set_xlabel("Monte Carlo steps: $N$")
         ax.set_ylabel("$||d_{MC} - diag(A^{-1})||/||diag(A^{-1})||$")
+        ax.set_xlim([40,N])
         ax.grid()
         ax.legend()
         plt.savefig(figpath + ".eps")
@@ -93,9 +99,10 @@ if __name__=="__main__":
             quant_975=np.quantile(dat,0.975, axis=0)
         fig,ax=plt.subplots()
         ax.semilogy(np.arange(40,N),mean[40:],lw=2,label="MC")
+        plt.subplots_adjust(left=0.2,right=0.95,bottom=0.15)
         ax.fill_between(np.arange(40,N),quant_25[40:],quant_975[40:],color='b',alpha=0.2)
         ax.set_xlabel("Monte Carlo steps: $N$")
-        ax.set_xlim([-2,N])
+        ax.set_xlim([40,N])
         ax.set_ylabel("$||d_{MC}^N - diag(A^{-1})||/||diag(A^{-1})||$")
         ax.grid()
         ax.legend()
